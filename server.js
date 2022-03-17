@@ -6,10 +6,11 @@ const router = require("./routes/authRouter.js");
 const jobRouter = require("./routes/jobRoutes.js");
 const notFoundMiddleware = require("./middleware/notFoundMiddleware.js");
 const errorMiddleware = require("./middleware/error-handler.js");
-
+const cors = require("cors");
 const app = express();
-app.use(express.json());
 
+app.use(express.json());
+app.use(cors());
 dotenv.config();
 
 const DB = process.env.DB;
