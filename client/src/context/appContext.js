@@ -5,19 +5,40 @@ import {
   REGISTER_USER_BEGIN,
   REGISTER_USER_ERROR,
   REGISTER_USER_SUCCESS,
+  LOGIN_USER_BEGIN,
+  LOGIN_USER_ERROR,
+  LOGIN_USER_SUCCESS,
 } from "./action";
 import reducer from "./reducer";
 import axios from "axios";
+
+const token = localStorage.getItem("token");
+const user = localStorage.getItem("user");
+const userLocation = localStorage.getItem("location");
+
+//get from localstorage
+const addUserToLocalStorage = (user, token, location) => {
+  localStorage.setItem("user", JSON.stringify(user));
+  localStorage.setItem("token", token);
+  localStorage.setItem("location", location);
+};
+
+//delete from localstorage
+const removeUserFromLocalStorage = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+  localStorage.removeItem("location");
+};
 
 export const initialState = {
   isLoading: false,
   showAlert: false,
   alertText: "",
   alertType: "",
-  user: null,
-  token: null,
-  userLocation: "",
-  jobLocation: "",
+  user: user ? JSON.parse(user) : null,
+  token: token ? JSON.parse(token) : null,
+  userLocation: userLocation || "",
+  jobLocation: userLocation || "",
 };
 
 //for navigating
@@ -42,19 +63,27 @@ const AppProvider = ({ children }) => {
   const registerUser = async (currentUser) => {
     dispatch({ type: REGISTER_USER_BEGIN });
     try {
-      const response = await axios.post("/api/v1/auth/register", currentUser);
-      setReload(true);
-      console.log(response);
-      const { firstName, lastName, token, location } = response.data;
+      const { data } = await axios.post("/api/v1/auth/register", currentUser);
+      console.log("data", data);
+
+      const { token } = data;
+
+      const { user } = data.data;
+
+      const { location } = user;
+
+      console.log(user, token, location);
+
       dispatch({
         type: REGISTER_USER_SUCCESS,
         payload: {
-          firstName,
-          lastName,
+          user,
           token,
           location,
         },
       });
+      addUserToLocalStorage(user, token, location);
+      setReload(true);
     } catch (error) {
       dispatch({
         type: REGISTER_USER_ERROR,

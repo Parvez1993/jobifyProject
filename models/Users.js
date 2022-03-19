@@ -4,7 +4,7 @@ var validator = require("validator");
 const bcrypt = require("bcryptjs");
 
 const UserSchema = new mongoose.Schema({
-  firstName: {
+  name: {
     type: String,
     required: [true, "Please provide name"],
     minlength: 3,
@@ -20,25 +20,23 @@ const UserSchema = new mongoose.Schema({
   password: {
     type: String,
     required: [true, "Please provide password"],
-    minlength: 6,
-    validate: {
-      validator: validator.isStrongPassword,
-      message:
-        "Password must contain at least one upper and lower character, letter, symbol",
-    },
+    // minlength: 6,
+    // validate: {
+    //   validator: validator.isStrongPassword,
+    //   message:
+    //     "Password must contain at least one upper and lower character, letter, symbol",
+    // },
     select: false,
-  },
-  lastName: {
-    type: String,
-    trim: true,
-    maxlength: 20,
-    default: "lastName",
   },
   location: {
     type: String,
     trim: true,
     maxlength: 20,
     default: "my city",
+  },
+  emailVerified: {
+    type: Boolean,
+    default: false,
   },
 });
 

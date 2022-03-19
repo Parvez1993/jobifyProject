@@ -7,8 +7,7 @@ import { useNavigate } from "react-router-dom";
 // global context and useNavigate later
 
 const initialState = {
-  firstName: "",
-  lastName: "",
+  name: "",
   email: "",
   password: "",
   isMember: true,
@@ -41,12 +40,14 @@ function Register() {
 
   const onSubmit = (e) => {
     e.preventDefault();
-    const { firstName, lastName, email, password, isMember } = values;
-    if (!email || !password || (!isMember && !firstName && !lastName)) {
+    const { name, email, password, isMember } = values;
+    if (!email || !password || (!isMember && !name)) {
       displayAlert();
       clearAlert();
+    }
+    if (isMember) {
     } else {
-      const currentUser = { firstName, lastName, email, password };
+      const currentUser = { name, email, password };
       registerUser(currentUser);
     }
   };
@@ -75,15 +76,8 @@ function Register() {
             <>
               <FormRow
                 type="text"
-                name="firstName"
-                value={values.firstName}
-                handleChange={handleChange}
-              />
-
-              <FormRow
-                type="text"
-                name="lastName"
-                value={values.lastName}
+                name="name"
+                value={values.name}
                 handleChange={handleChange}
               />
             </>

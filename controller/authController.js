@@ -1,6 +1,7 @@
 const User = require("../models/Users.js");
 const { StatusCodes } = require("http-status-codes");
 const { BadRequestError, UnAuthenticatedError } = require("../errors/index.js");
+const mailsend = require("../config/sendmail.js");
 var jwt = require("jsonwebtoken");
 
 const signToken = (id) => {
@@ -9,8 +10,9 @@ const signToken = (id) => {
   });
 };
 
-const createSendToken = (user, statusCode, res) => {
+const createSendToken = async (user, statusCode, req, res) => {
   const token = signToken(user._id);
+  const location = user.location;
   const cookieOptions = {
     expires: new Date(
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
@@ -24,23 +26,32 @@ const createSendToken = (user, statusCode, res) => {
   // Remove password from output
   user.password = undefined;
 
-  res.status(statusCode).json({
-    status: "success",
-    token,
-    data: {
-      user,
-    },
-  });
+  const link = token;
+  const mail = await mailsend(user.email, link);
+
+  if (mail) {
+    res.status(statusCode).json({
+      status: "failure",
+    });
+  } else {
+    res.status(statusCode).json({
+      status: "success",
+      token,
+      data: {
+        user,
+      },
+    });
+  }
 };
 
 exports.register = async (req, res, next) => {
-  const { firstName, lastName, password, email } = req.body;
-  console.log(firstName, lastName, password, email);
-  if (!firstName || !lastName || !email || !password) {
+  const { name, password, email } = req.body;
+  console.log(name, password, email);
+  if (!name || !email || !password) {
     throw new BadRequestError("Please provide all the values");
   }
 
-  if (!firstName || !lastName || !email || !password) {
+  if (!name || !email || !password) {
     throw new BadRequestError("please provide all values");
   }
   const userAlreadyExists = await User.findOne({ email });
@@ -48,7 +59,8 @@ exports.register = async (req, res, next) => {
     throw new BadRequestError("Email already in use");
   }
   const user = await User.create(req.body);
-  createSendToken(user, StatusCodes.CREATED, res);
+
+  createSendToken(user, StatusCodes.CREATED, req, res);
 };
 
 exports.login = async (req, res, next) => {

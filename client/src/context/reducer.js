@@ -4,6 +4,9 @@ import {
   REGISTER_USER_BEGIN,
   REGISTER_USER_SUCCESS,
   REGISTER_USER_ERROR,
+  LOGIN_USER_BEGIN,
+  LOGIN_USER_ERROR,
+  LOGIN_USER_SUCCESS,
 } from "./action";
 
 const reducer = (state, action) => {
@@ -29,8 +32,7 @@ const reducer = (state, action) => {
   if (action.type === REGISTER_USER_SUCCESS) {
     return {
       ...state,
-      firstName: action.payload.firstName,
-      lastName: action.payload.lastName,
+      user: action.payload.user,
       token: action.payload.token,
       userLocation: action.payload.location,
       jobLocation: action.payload.location,
@@ -38,7 +40,6 @@ const reducer = (state, action) => {
       showAlert: true,
       alertType: "success",
       alertText: "User Created! Redirecting...",
-      user: true,
     };
   }
   if (action.type === REGISTER_USER_ERROR) {
@@ -48,7 +49,6 @@ const reducer = (state, action) => {
       showAlert: true,
       alertType: "danger",
       alertText: action.payload.msg,
-      user: false,
     };
   }
 

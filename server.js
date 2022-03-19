@@ -8,6 +8,11 @@ const notFoundMiddleware = require("./middleware/notFoundMiddleware.js");
 const errorMiddleware = require("./middleware/error-handler.js");
 const cors = require("cors");
 const app = express();
+const morgan = require("morgan");
+
+if (process.env.NODE_ENV !== "production") {
+  app.use(morgan("dev"));
+}
 
 app.use(express.json());
 app.use(cors());
