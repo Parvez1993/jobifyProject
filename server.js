@@ -9,6 +9,7 @@ const errorMiddleware = require("./middleware/error-handler.js");
 const cors = require("cors");
 const app = express();
 const morgan = require("morgan");
+const authenticateUser = require("./middleware/auth.js");
 
 if (process.env.NODE_ENV !== "production") {
   app.use(morgan("dev"));
@@ -34,7 +35,7 @@ app.get("/", (req, res) => {
 // /middleware
 
 app.use("/api/v1/auth", router);
-app.use("/api/v1/jobs", jobRouter);
+app.use("/api/v1/jobs", authenticateUser, jobRouter);
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);
