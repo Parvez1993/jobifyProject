@@ -24,10 +24,9 @@ function Register() {
     displayAlert,
     clearAlert,
     registerUser,
-    firstName,
-    lastName,
     reload,
     setReload,
+    loginUser,
   } = useAppContext();
   //toggle members
   const toggleMember = () => {
@@ -41,13 +40,14 @@ function Register() {
   const onSubmit = (e) => {
     e.preventDefault();
     const { name, email, password, isMember } = values;
+    const currentUser = { name, email, password };
     if (!email || !password || (!isMember && !name)) {
       displayAlert();
       clearAlert();
     }
     if (isMember) {
+      loginUser(currentUser);
     } else {
-      const currentUser = { name, email, password };
       registerUser(currentUser);
     }
   };

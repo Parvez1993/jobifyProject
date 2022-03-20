@@ -1,5 +1,6 @@
 import main from "../assets/images/main.svg";
 import styled from "styled-components";
+import { Link } from "react-router-dom";
 function Landing() {
   return (
     <>
@@ -20,7 +21,9 @@ function Landing() {
               aperiam officiis et labore voluptas voluptate eius enim in
               adipisci. Minima omnis alias libero id accusantium.
             </p>
-            <button className="btn btn-hero">Login/Register</button>
+            <Link to="/register">
+              <button className="btn btn-hero">Login/Register</button>
+            </Link>
           </div>
           <img src={main} className="img main-img" alt="job hunt" />
         </div>

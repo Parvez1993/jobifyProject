@@ -8,6 +8,8 @@ import {
   LOGIN_USER_BEGIN,
   LOGIN_USER_ERROR,
   LOGIN_USER_SUCCESS,
+  TOGGLE_SIDEBAR,
+  LOGOUT_USER,
 } from "./action";
 import reducer from "./reducer";
 import axios from "axios";
@@ -36,9 +38,10 @@ export const initialState = {
   alertText: "",
   alertType: "",
   user: user ? JSON.parse(user) : null,
-  token: token ? JSON.parse(token) : null,
+  token: userLocation || "",
   userLocation: userLocation || "",
   jobLocation: userLocation || "",
+  showSidebar: false,
 };
 
 //for navigating
@@ -92,6 +95,47 @@ const AppProvider = ({ children }) => {
     }
   };
 
+  const loginUser = async (currentUser) => {
+    dispatch({ type: LOGIN_USER_BEGIN });
+    try {
+      const { data } = await axios.post("/api/v1/auth/login", currentUser);
+      console.log("data", data);
+
+      const { token } = data;
+
+      const { user } = data.data;
+
+      const { location } = user;
+
+      console.log(user, token, location);
+
+      dispatch({
+        type: LOGIN_USER_SUCCESS,
+        payload: {
+          user,
+          token,
+          location,
+        },
+      });
+      addUserToLocalStorage(user, token, location);
+      setReload(true);
+    } catch (error) {
+      dispatch({
+        type: LOGIN_USER_ERROR,
+        payload: { msg: error.response.data.msg },
+      });
+    }
+  };
+
+  const toggleSidebar = () => {
+    dispatch({ type: TOGGLE_SIDEBAR });
+  };
+
+  const logoutUser = () => {
+    dispatch({ type: LOGOUT_USER });
+    removeUserFromLocalStorage();
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -101,6 +145,9 @@ const AppProvider = ({ children }) => {
         registerUser,
         reload,
         setReload,
+        loginUser,
+        toggleSidebar,
+        logoutUser,
       }}
     >
       {children}

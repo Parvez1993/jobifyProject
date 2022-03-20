@@ -74,12 +74,12 @@ exports.login = async (req, res, next) => {
   const user = await User.findOne({ email }).select("+password");
 
   if (!user || !(await user.correctPassword(password, user.password))) {
-    throw new BadRequestError("Incorrect credentials");
+    throw new UnAuthenticatedError("Incorrect credentials");
   }
 
   // 3) If everything ok, send token to client
 
-  createSendToken(user, StatusCodes.CREATED, res);
+  createSendToken(user, StatusCodes.CREATED, req, res);
 };
 exports.updateUser = async (req, res) => {
   res.send("update user");
