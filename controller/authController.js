@@ -29,19 +29,26 @@ const createSendToken = async (user, statusCode, req, res) => {
   const link = token;
   const mail = await mailsend(user.email, link);
 
-  if (mail) {
-    res.status(statusCode).json({
-      status: "failure",
-    });
-  } else {
-    res.status(statusCode).json({
-      status: "success",
-      token,
-      data: {
-        user,
-      },
-    });
-  }
+  // if (mail) {
+  //   res.status(statusCode).json({
+  //     status: "failure",
+  //   });
+  // } else {
+  //   res.status(statusCode).json({
+  //     status: "success",
+  //     token,
+  //     data: {
+  //       user,
+  //     },
+  //   });
+  // }
+  res.status(statusCode).json({
+    status: "success",
+    token,
+    data: {
+      user,
+    },
+  });
 };
 
 exports.register = async (req, res, next) => {
@@ -82,5 +89,16 @@ exports.login = async (req, res, next) => {
   createSendToken(user, StatusCodes.CREATED, req, res);
 };
 exports.updateUser = async (req, res) => {
-  res.send("update user");
+  const { email, name, location } = req.body;
+  if (!email || !name || !location) {
+    throw new BadRequestError("Please provide all values");
+  }
+  const user = await User.findOne({ _id: req.user.userId });
+
+  user.email = email;
+  user.name = name;
+
+  user.location = location;
+
+  createSendToken(user, StatusCodes.ACCEPTED, req, res);
 };

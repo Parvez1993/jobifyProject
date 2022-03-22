@@ -1,4 +1,4 @@
-import React, { useState, useReducer, useContext } from "react";
+import React, { useState, useReducer, useContext, useEffect } from "react";
 import {
   CLEAR_ALERT,
   DISPLAY_ALERT,
@@ -10,6 +10,16 @@ import {
   LOGIN_USER_SUCCESS,
   TOGGLE_SIDEBAR,
   LOGOUT_USER,
+  UPDATE_USER_SUCCESS,
+  UPDATE_USER_ERROR,
+  UPDATE_USER_BEGIN,
+  HANDLE_CHANGE,
+  CLEAR_VALUES,
+  CREATE_JOB_SUCCESS,
+  CREATE_JOB_ERROR,
+  CREATE_JOB_BEGIN,
+  GET_JOBS_SUCCESS,
+  GET_JOBS_BEGIN,
 } from "./action";
 import reducer from "./reducer";
 import axios from "axios";
@@ -38,10 +48,28 @@ export const initialState = {
   alertText: "",
   alertType: "",
   user: user ? JSON.parse(user) : null,
-  token: userLocation || "",
+  token: token || "",
   userLocation: userLocation || "",
+
   jobLocation: userLocation || "",
   showSidebar: false,
+
+  //job////////////////////////////////////////////
+  isEditing: false,
+  editJobId: "",
+  position: "",
+  company: "",
+  // jobLocation
+  jobTypeOptions: ["full-time", "part-time", "remote", "internship"],
+  jobType: "full-time",
+  statusOptions: ["pending", "interview", "declined"],
+  status: "pending",
+
+  //jobs
+  jobs: [],
+  totalJobs: 0,
+  numOfPages: 1,
+  page: 1,
 };
 
 //for navigating
@@ -136,6 +164,108 @@ const AppProvider = ({ children }) => {
     removeUserFromLocalStorage();
   };
 
+  const updateUser = async (currentUser) => {
+    dispatch({ type: UPDATE_USER_BEGIN });
+    try {
+      const { data } = await axios.patch(
+        "/api/v1/auth/updateUser",
+        currentUser,
+        {
+          headers: {
+            Authorization: `Bearer ${state.token}`,
+          },
+        }
+      );
+      const { token } = data;
+
+      const { user } = data.data;
+
+      const { location } = user;
+
+      dispatch({
+        type: UPDATE_USER_SUCCESS,
+        payload: { user, location, token },
+      });
+      addUserToLocalStorage(user, token, location);
+    } catch (error) {
+      dispatch({
+        type: UPDATE_USER_ERROR,
+        payload: { msg: error.response.data.msg },
+      });
+    }
+    clearAlert();
+  };
+
+  const clearValues = () => {
+    dispatch({ type: CLEAR_VALUES });
+  };
+
+  // appContext
+  const handleChange = ({ name, value }) => {
+    dispatch({
+      type: HANDLE_CHANGE,
+      payload: { name, value },
+    });
+  };
+
+  const createJob = async () => {
+    dispatch({ type: CREATE_JOB_BEGIN });
+    try {
+      const { position, company, jobLocation, jobType, status } = state;
+
+      await axios.post(
+        "/api/v1/jobs",
+        {
+          company,
+          position,
+          jobLocation,
+          jobType,
+          status,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${state.token}`,
+          },
+        }
+      );
+      dispatch({
+        type: CREATE_JOB_SUCCESS,
+      });
+      // call function instead clearValues()
+      dispatch({ type: CLEAR_VALUES });
+    } catch (error) {
+      if (error.response.status === 401) return;
+      dispatch({
+        type: CREATE_JOB_ERROR,
+        payload: { msg: error.response.data.msg },
+      });
+    }
+    clearAlert();
+  };
+
+  const getJobs = async () => {
+    dispatch({ type: GET_JOBS_BEGIN });
+    try {
+      const { data } = await axios.get("/api/v1/jobs");
+      const { jobs, totalJobs, numOfPages } = data;
+      dispatch({
+        type: GET_JOBS_SUCCESS,
+        payload: {
+          jobs,
+          totalJobs,
+          numOfPages,
+        },
+      });
+    } catch (error) {
+      console.log(error.response);
+      logoutUser();
+    }
+    clearAlert();
+  };
+
+  useEffect(() => {
+    getJobs();
+  }, []);
   return (
     <AppContext.Provider
       value={{
@@ -148,6 +278,10 @@ const AppProvider = ({ children }) => {
         loginUser,
         toggleSidebar,
         logoutUser,
+        updateUser,
+        handleChange,
+        clearValues,
+        createJob,
       }}
     >
       {children}
@@ -155,6 +289,7 @@ const AppProvider = ({ children }) => {
   );
 };
 // make sure use
+
 export const useAppContext = () => {
   return useContext(AppContext);
 };
