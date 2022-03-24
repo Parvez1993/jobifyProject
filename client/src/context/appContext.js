@@ -246,7 +246,11 @@ const AppProvider = ({ children }) => {
   const getJobs = async () => {
     dispatch({ type: GET_JOBS_BEGIN });
     try {
-      const { data } = await axios.get("/api/v1/jobs");
+      const { data } = await axios.get("/api/v1/jobs", {
+        headers: {
+          Authorization: `Bearer ${state.token}`,
+        },
+      });
       const { jobs, totalJobs, numOfPages } = data;
       dispatch({
         type: GET_JOBS_SUCCESS,
@@ -258,14 +262,14 @@ const AppProvider = ({ children }) => {
       });
     } catch (error) {
       console.log(error.response);
-      logoutUser();
+      // logoutUser();
     }
     clearAlert();
   };
 
-  useEffect(() => {
-    getJobs();
-  }, []);
+  // useEffect(() => {
+  //   getJobs();
+  // }, []);
   return (
     <AppContext.Provider
       value={{
@@ -282,6 +286,7 @@ const AppProvider = ({ children }) => {
         handleChange,
         clearValues,
         createJob,
+        getJobs,
       }}
     >
       {children}
