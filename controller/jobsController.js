@@ -30,9 +30,29 @@ const getAllJobs = async (req, res) => {
 };
 
 const updateJob = async (req, res) => {
-  res.send("updateJob");
-};
+  const { id: jobId } = req.params;
+  const { company, position, jobLocation } = req.body;
 
+  if (!position || !company) {
+    throw new BadRequestError("Please provide all values");
+  }
+  const job = await Job.findOne({ _id: jobId });
+
+  if (!job) {
+    throw new NotFoundError(`No job with id :${jobId}`);
+  }
+
+  // check permissions
+
+  // alternative approach
+
+  job.position = position;
+  job.company = company;
+  job.jobLocation = jobLocation;
+
+  await job.save();
+  res.status(StatusCodes.OK).json({ job });
+};
 const showStats = async (req, res) => {
   res.send("showStats");
 };

@@ -20,6 +20,7 @@ import {
   CREATE_JOB_BEGIN,
   GET_JOBS_SUCCESS,
   GET_JOBS_BEGIN,
+  SET_EDIT_JOB,
 } from "./action";
 import reducer from "./reducer";
 import axios from "axios";
@@ -267,9 +268,16 @@ const AppProvider = ({ children }) => {
     clearAlert();
   };
 
-  // useEffect(() => {
-  //   getJobs();
-  // }, []);
+  const setEditJob = (id) => {
+    dispatch({ type: SET_EDIT_JOB, payload: { id } });
+  };
+
+  const editJob = () => {
+    console.log("edit job");
+  };
+  const deleteJob = (id) => {
+    console.log(`delete : ${id}`);
+  };
   return (
     <AppContext.Provider
       value={{
@@ -287,6 +295,9 @@ const AppProvider = ({ children }) => {
         clearValues,
         createJob,
         getJobs,
+        setEditJob,
+        deleteJob,
+        editJob,
       }}
     >
       {children}
