@@ -27,12 +27,11 @@ function AddJob() {
     if (!position || !company || !jobLocation) {
       displayAlert();
       return;
-    }
-    if (isEditing) {
+    } else if (isEditing) {
       editJob();
-      return;
+    } else {
+      createJob();
     }
-    createJob();
   };
 
   const handleJobInput = (e) => {

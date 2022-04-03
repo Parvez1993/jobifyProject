@@ -21,6 +21,10 @@ import {
   GET_JOBS_SUCCESS,
   GET_JOBS_BEGIN,
   SET_EDIT_JOB,
+  DELETE_JOB_BEGIN,
+  EDIT_JOB_SUCCESS,
+  EDIT_JOB_ERROR,
+  EDIT_JOB_BEGIN,
 } from "./action";
 import reducer from "./reducer";
 import axios from "axios";
@@ -183,11 +187,7 @@ const AppProvider = ({ children }) => {
 
       const { location } = user;
 
-      dispatch({
-        type: UPDATE_USER_SUCCESS,
-        payload: { user, location, token },
-      });
-      addUserToLocalStorage(user, token, location);
+      console.log(token, user, location);
     } catch (error) {
       dispatch({
         type: UPDATE_USER_ERROR,
@@ -269,15 +269,58 @@ const AppProvider = ({ children }) => {
   };
 
   const setEditJob = (id) => {
+    console.log(id);
     dispatch({ type: SET_EDIT_JOB, payload: { id } });
   };
 
-  const editJob = () => {
-    console.log("edit job");
+  const editJob = async () => {
+    dispatch({ type: EDIT_JOB_BEGIN });
+    try {
+      const { position, company, jobLocation, jobType, status, editJobId } =
+        state;
+
+      await axios.patch(
+        `/api/v1/jobs/${editJobId}`,
+        {
+          company,
+          position,
+          jobLocation,
+          jobType,
+          status,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${state.token}`,
+          },
+        }
+      );
+
+      dispatch({
+        type: EDIT_JOB_SUCCESS,
+      });
+    } catch (error) {
+      dispatch({
+        type: EDIT_JOB_ERROR,
+        payload: { msg: error.response.data.msg },
+      });
+    }
+    clearAlert();
   };
-  const deleteJob = (id) => {
-    console.log(`delete : ${id}`);
+
+  const deleteJob = async (jobId) => {
+    dispatch({ type: DELETE_JOB_BEGIN });
+    try {
+      await axios.delete(`/api/v1/jobs/${jobId}`, {
+        headers: {
+          Authorization: `Bearer ${state.token}`,
+        },
+      });
+      getJobs();
+    } catch (error) {
+      console.log(error);
+    }
   };
+
   return (
     <AppContext.Provider
       value={{
