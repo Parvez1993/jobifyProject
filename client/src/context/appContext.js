@@ -27,6 +27,7 @@ import {
   EDIT_JOB_BEGIN,
   SHOW_STATS_BEGIN,
   SHOW_STATS_SUCCESS,
+  CLEAR_FILTERS,
 } from "./action";
 import reducer from "./reducer";
 import axios from "axios";
@@ -81,6 +82,13 @@ export const initialState = {
   //stats
   stats: {},
   monthlyApplications: [],
+
+  //search filters
+  search: "",
+  searchStatus: "all",
+  searchType: "all",
+  sort: "latest",
+  sortOptions: ["latest", "oldest", "a-z", "z-a"],
 };
 
 //for navigating
@@ -251,9 +259,15 @@ const AppProvider = ({ children }) => {
   };
 
   const getJobs = async () => {
+    const { search, searchStatus, searchType, sort } = state;
+    console.log(searchStatus, searchType, sort);
+    let url = `/api/v1/jobs?status=${searchStatus}&jobType=${searchType}&sort=${sort}`;
+    if (search) {
+      url = url + `&search=${search}`;
+    }
     dispatch({ type: GET_JOBS_BEGIN });
     try {
-      const { data } = await axios.get("/api/v1/jobs", {
+      const { data } = await axios.get(`${url}`, {
         headers: {
           Authorization: `Bearer ${state.token}`,
         },
@@ -351,6 +365,9 @@ const AppProvider = ({ children }) => {
     clearAlert();
   };
 
+  const clearFilters = () => {
+    dispatch({ type: CLEAR_FILTERS });
+  };
   return (
     <AppContext.Provider
       value={{
@@ -372,6 +389,7 @@ const AppProvider = ({ children }) => {
         deleteJob,
         editJob,
         showStats,
+        clearFilters,
       }}
     >
       {children}
