@@ -28,6 +28,7 @@ import {
   SHOW_STATS_BEGIN,
   SHOW_STATS_SUCCESS,
   CLEAR_FILTERS,
+  CHANGE_PAGE,
 } from "./action";
 import reducer from "./reducer";
 import axios from "axios";
@@ -113,7 +114,10 @@ const AppProvider = ({ children }) => {
   const registerUser = async (currentUser) => {
     dispatch({ type: REGISTER_USER_BEGIN });
     try {
-      const { data } = await axios.post("/api/v1/auth/register", currentUser);
+      const { data } = await axios.post(
+        `${process.env.REACT_APP_BACKEND_URL}/auth/register`,
+        currentUser
+      );
       console.log("data", data);
 
       const { token } = data;
@@ -145,7 +149,10 @@ const AppProvider = ({ children }) => {
   const loginUser = async (currentUser) => {
     dispatch({ type: LOGIN_USER_BEGIN });
     try {
-      const { data } = await axios.post("/api/v1/auth/login", currentUser);
+      const { data } = await axios.post(
+        `${process.env.REACT_APP_BACKEND_URL}/auth/login`,
+        currentUser
+      );
       console.log("data", data);
 
       const { token } = data;
@@ -187,7 +194,8 @@ const AppProvider = ({ children }) => {
     dispatch({ type: UPDATE_USER_BEGIN });
     try {
       const { data } = await axios.patch(
-        "/api/v1/auth/updateUser",
+        `${process.env.REACT_APP_BACKEND_URL}/auth/updateUser`,
+
         currentUser,
         {
           headers: {
@@ -229,7 +237,7 @@ const AppProvider = ({ children }) => {
       const { position, company, jobLocation, jobType, status } = state;
 
       await axios.post(
-        "/api/v1/jobs",
+        `${process.env.REACT_APP_BACKEND_URL}/jobs`,
         {
           company,
           position,
@@ -259,12 +267,13 @@ const AppProvider = ({ children }) => {
   };
 
   const getJobs = async () => {
-    const { search, searchStatus, searchType, sort } = state;
-    console.log(searchStatus, searchType, sort);
-    let url = `/api/v1/jobs?status=${searchStatus}&jobType=${searchType}&sort=${sort}`;
+    const { page, search, searchStatus, searchType, sort } = state;
+    console.log("arabic", searchStatus, searchType, sort, page);
+    let url = `${process.env.REACT_APP_BACKEND_URL}/jobs?page=${page}&status=${searchStatus}&jobType=${searchType}&sort=${sort}`;
     if (search) {
       url = url + `&search=${search}`;
     }
+
     dispatch({ type: GET_JOBS_BEGIN });
     try {
       const { data } = await axios.get(`${url}`, {
@@ -300,7 +309,7 @@ const AppProvider = ({ children }) => {
         state;
 
       await axios.patch(
-        `/api/v1/jobs/${editJobId}`,
+        `${process.env.REACT_APP_BACKEND_URL}/jobs/${editJobId}`,
         {
           company,
           position,
@@ -330,7 +339,7 @@ const AppProvider = ({ children }) => {
   const deleteJob = async (jobId) => {
     dispatch({ type: DELETE_JOB_BEGIN });
     try {
-      await axios.delete(`/api/v1/jobs/${jobId}`, {
+      await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/jobs/${jobId}`, {
         headers: {
           Authorization: `Bearer ${state.token}`,
         },
@@ -345,11 +354,14 @@ const AppProvider = ({ children }) => {
   const showStats = async () => {
     dispatch({ type: SHOW_STATS_BEGIN });
     try {
-      const { data } = await axios.get("/api/v1/jobs/stats", {
-        headers: {
-          Authorization: `Bearer ${state.token}`,
-        },
-      });
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_BACKEND_URL}/jobs/stats`,
+        {
+          headers: {
+            Authorization: `Bearer ${state.token}`,
+          },
+        }
+      );
       dispatch({
         type: SHOW_STATS_SUCCESS,
         payload: {
@@ -367,6 +379,9 @@ const AppProvider = ({ children }) => {
 
   const clearFilters = () => {
     dispatch({ type: CLEAR_FILTERS });
+  };
+  const changePage = (page) => {
+    dispatch({ type: CHANGE_PAGE, payload: { page } });
   };
   return (
     <AppContext.Provider
@@ -390,6 +405,7 @@ const AppProvider = ({ children }) => {
         editJob,
         showStats,
         clearFilters,
+        changePage,
       }}
     >
       {children}
