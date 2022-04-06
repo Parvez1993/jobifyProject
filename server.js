@@ -50,8 +50,6 @@ const __directoryname = dirname(
 // only when ready to deploy
 app.use(express.static(path.resolve(__directoryname, "./client/build")));
 
-//ratomg
-
 // /middleware
 
 app.use("/api/v1/auth", router);
